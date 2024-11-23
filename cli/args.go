@@ -13,6 +13,7 @@ import (
 type Args struct {
 	Tags                string
 	Dir                 string
+	File                string
 	Filter              string
 	Skip                string
 	Type                string
@@ -24,8 +25,8 @@ type Args struct {
 }
 
 func validate(args Args) error {
-	if args.Tags == "" {
-		return errors.New("missing tags")
+	if args.Tags == "" && args.File == "" {
+		return errors.New("please provide the required arguments")
 	}
 
 	if args.Type != string(common.Terraform) && args.Type != string(common.Terragrunt) {
@@ -44,6 +45,7 @@ func InitArgs() (Args, error) {
 
 	fs.StringVar(&args.Tags, "tags", "", "Tags as a valid JSON document")
 	fs.StringVar(&args.Dir, "dir", ".", "Directory to recursively search for .tf files and terratag them")
+	fs.StringVar(&args.File, "file", "", "File configuration for tagging resources")
 	fs.BoolVar(&args.IsSkipTerratagFiles, "skipTerratagFiles", true, "Skips any previously tagged files")
 	fs.StringVar(&args.Filter, "filter", ".*", "Only apply tags to the selected resource types (regex)")
 	fs.StringVar(&args.Skip, "skip", "", "Exclude the selected resource types from tagging (regex)")

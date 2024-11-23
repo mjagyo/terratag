@@ -41,20 +41,21 @@ func (c *counters) Add(other counters) {
 }
 
 func Terratag(args cli.Args) error {
-	if err := terraform.ValidateInitRun(args.Dir, args.Type); err != nil {
-		return err
-	}
+	// if err := terraform.ValidateInitRun(args.Dir, args.Type); err != nil {
+	// 	return err
+	// }
 
-	matches, err := terraform.GetFilePaths(args.Dir, args.Type)
-	if err != nil {
-		return err
-	}
+	matches, _ := terraform.GetFilePaths(args.Dir, args.Type)
+	// if err != nil {
+	// 	return err
+	// }
 
 	taggingArgs := &common.TaggingArgs{
 		Filter:              args.Filter,
 		Skip:                args.Skip,
 		Dir:                 args.Dir,
 		Tags:                args.Tags,
+		File:                args.File,
 		Matches:             matches,
 		IsSkipTerratagFiles: args.IsSkipTerratagFiles,
 		Rename:              args.Rename,
@@ -63,7 +64,6 @@ func Terratag(args cli.Args) error {
 	}
 
 	counters := tagDirectoryResources(taggingArgs)
-
 	log.Print("[INFO] Summary:")
 	log.Print("[INFO] Tagged ", counters.taggedResources, " resource/s (out of ", counters.totalResources, " resource/s processed)")
 	log.Print("[INFO] In ", counters.taggedFiles, " file/s (out of ", counters.totalFiles, " file/s processed)")
@@ -110,8 +110,35 @@ func tagDirectoryResources(args *common.TaggingArgs) counters {
 	return total
 }
 
+func mergeTags(map1, map2 map[string]interface{}) (string, error) {
+	// Create a new map to hold the merged tags
+	mergedTags := make(map[string]interface{})
+
+	// Merge tags from the first map
+	for key, value := range map1 {
+		mergedTags[key] = value
+	}
+
+	// Merge tags from the second map
+	for key, value := range map2 {
+		mergedTags[key] = value
+	}
+
+	// Convert the merged map to JSON
+	result, err := json.Marshal(mergedTags["tags"])
+	if err != nil {
+		return "", err
+	}
+
+	return string(result), nil
+}
+
 func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) {
 	perFileCounters := counters{}
+	var jsonMap map[string]interface{}
+	var jsonedTags string
+	var finMergedTags string
+	// var mergedJSON string
 
 	log.Print("[INFO] Processing file ", path)
 
@@ -124,15 +151,29 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 
 	filename := file.GetFilename(path)
 
-	hclMap, err := toHclMap(args.Tags)
+	if args.File != "" {
+		dataTags, err := file.ReadYAMLFile(args.File)
+
+		if err != nil {
+			return nil, err
+		}
+
+		jsonedTags, err = file.ConvertToJSON(dataTags)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	log.Print("[INFO] Tags from file found ", jsonedTags)
+
+	err = json.Unmarshal([]byte(jsonedTags), &jsonMap)
 	if err != nil {
+		fmt.Println("Error unmarshalling JSON:", err)
 		return nil, err
 	}
 
-	terratag := common.TerratagLocal{
-		Found: map[string]hclwrite.Tokens{},
-		Added: hclMap,
-	}
+	terratag := common.TerratagLocal{}
 
 	for _, resource := range hcl.Body().Blocks() {
 		switch resource.Type() {
@@ -170,6 +211,31 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 				return nil, err
 			}
 
+			if value, exists := jsonMap["resources"].(map[string]interface{}); exists {
+				label := resource.Labels()[0]
+
+				if resourceData, exists := value[label]; exists {
+					fmt.Printf("Found resource '%s': %v\n", label, resourceData)
+					fmt.Printf("Found resource '%s'\n", jsonMap["defaults"])
+
+					finMergedTags, err = mergeTags(resourceData.(map[string]interface{}), jsonMap["defaults"].(map[string]interface{}))
+					fmt.Printf("Merged tags '%s'\n", finMergedTags)
+					if err != nil {
+						return nil, err
+					}
+
+					hclMap, err := toHclMap(finMergedTags)
+					if err != nil {
+						return nil, err
+					}
+
+					terratag = common.TerratagLocal{
+						Found: map[string]hclwrite.Tokens{},
+						Added: hclMap,
+					}
+				}
+			}
+
 			if isTaggable {
 				log.Print("[INFO] Resource taggable, processing...", resource.Labels())
 
@@ -178,7 +244,7 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 				result, err := tagging.TagResource(tagging.TagBlockArgs{
 					Filename: filename,
 					Block:    resource,
-					Tags:     args.Tags,
+					Tags:     finMergedTags,
 					Terratag: terratag,
 					TagId:    providers.GetTagIdByResource(terraform.GetResourceType(*resource)),
 				})

@@ -18,6 +18,7 @@ type TaggingArgs struct {
 	Filter              string
 	Skip                string
 	Dir                 string
+	File                string
 	Tags                string
 	Matches             []string
 	IsSkipTerratagFiles bool

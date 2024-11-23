@@ -1,6 +1,7 @@
 package file
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"go.uber.org/multierr"
+	"gopkg.in/yaml.v3"
 )
 
 func ReplaceWithTerratagFile(path string, textContent string, rename bool) error {
@@ -62,4 +64,29 @@ func ReadHCLFile(path string) (*hclwrite.File, error) {
 	}
 
 	return file, nil
+}
+
+func ReadYAMLFile(filePath string) (map[string]interface{}, error) {
+	// Read the YAML file content
+	yamlContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the YAML into a dynamic map
+	var result map[string]interface{}
+	err = yaml.Unmarshal(yamlContent, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func ConvertToJSON(data map[string]interface{}) (string, error) {
+	// Marshal the map into JSON format
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(jsonData), nil
 }

@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Usage: terratag -tags='{ \"some_tag\": \"value\" }' [-dir=\".\"]")
+		fmt.Println("Usage: terratag -file='default.terratag.yml")
 
 		return
 	}

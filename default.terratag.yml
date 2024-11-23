@@ -1,0 +1,28 @@
+defaults:
+  tags:
+    "cloud": "Azure"
+    "country": "DDC"
+    "market": "TBD"
+    "platform": "DXP"
+    "department": "DXP1"
+    "environment": "dev"
+    "geographic_location": "aue"
+    "project_description": "DXP applications use"
+    "project_name": "dxp-core"
+    "project_owner": "tbd"
+    "solution_name": "tbd"
+    "cost_center": "devops"
+    "source": "terraform"
+
+resources:
+  azurerm_resource_group:
+    tags:
+      "owner": "infrastructureTeam"
+  azurerm_virtual_network:
+    tags:
+      "storage_type": "standard"
+  azurerm_storage_account:
+    tags:
+      "storage_type": "blob"
+      "data_class": "hot"
+      "backup_required": "true"
