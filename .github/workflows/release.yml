@@ -25,7 +25,6 @@ jobs:
         env:
           CGO_ENABLED: 0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
 
   npmbuild:
     name: Build for Alpine and publish node artifact
@@ -46,19 +45,3 @@ jobs:
         run: |
           mkdir out
           CGO_ENABLED=0 go build -ldflags "-X main.version=${{github.ref_name}}" -a -installsuffix cgo -o ./out/terratag/terratag ./cmd/terratag
-      # Setup .npmrc file to publish to GitHub Packages
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: "https://registry.npmjs.org"
-          scope: "@env0"
-      - run: |
-          npm init --yes --scope @env0
-          ref=${{ github.ref }}
-          tag=\"${ref#"refs/tags/v"}\"
-          echo "`jq .version="${tag}" package.json`" > package.json
-        working-directory: ./out/terratag
-      - run: npm publish --access public ./out/terratag
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
