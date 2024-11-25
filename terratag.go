@@ -165,8 +165,6 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 		}
 	}
 
-	log.Print("[INFO] Tags from file found ", jsonedTags)
-
 	err = json.Unmarshal([]byte(jsonedTags), &jsonMap)
 	if err != nil {
 		fmt.Println("Error unmarshalling JSON:", err)
@@ -210,30 +208,53 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 			if err != nil {
 				return nil, err
 			}
+			finMergedTags = ""
 
 			if value, exists := jsonMap["resources"].(map[string]interface{}); exists {
 				label := resource.Labels()[0]
+				fmt.Printf("Found resource '%s'\n", jsonMap["defaults"])
 
 				if resourceData, exists := value[label]; exists {
 					fmt.Printf("Found resource '%s': %v\n", label, resourceData)
-					fmt.Printf("Found resource '%s'\n", jsonMap["defaults"])
 
 					finMergedTags, err = mergeTags(resourceData.(map[string]interface{}), jsonMap["defaults"].(map[string]interface{}))
-					fmt.Printf("Merged tags '%s'\n", finMergedTags)
+
 					if err != nil {
 						return nil, err
-					}
-
-					hclMap, err := toHclMap(finMergedTags)
-					if err != nil {
-						return nil, err
-					}
-
-					terratag = common.TerratagLocal{
-						Found: map[string]hclwrite.Tokens{},
-						Added: hclMap,
 					}
 				}
+
+				if err != nil {
+					return nil, err
+				}
+
+			} else {
+				mergedTags := make(map[string]interface{})
+
+				// Merge tags from the first map
+				for key, value := range jsonMap["defaults"].(map[string]interface{}) {
+					mergedTags[key] = value
+				}
+
+				// Convert the merged map to JSON
+				result, err := json.Marshal(mergedTags["tags"])
+				if err != nil {
+					return nil, err
+				}
+
+				finMergedTags = string(result)
+
+				fmt.Printf("Merged tags '%s'\n", finMergedTags)
+			}
+
+			hclMap, err := toHclMap(finMergedTags)
+			if err != nil {
+				return nil, err
+			}
+
+			terratag = common.TerratagLocal{
+				Found: map[string]hclwrite.Tokens{},
+				Added: hclMap,
 			}
 
 			if isTaggable {
