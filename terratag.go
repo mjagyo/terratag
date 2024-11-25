@@ -41,14 +41,7 @@ func (c *counters) Add(other counters) {
 }
 
 func Terratag(args cli.Args) error {
-	// if err := terraform.ValidateInitRun(args.Dir, args.Type); err != nil {
-	// 	return err
-	// }
-
 	matches, _ := terraform.GetFilePaths(args.Dir, args.Type)
-	// if err != nil {
-	// 	return err
-	// }
 
 	taggingArgs := &common.TaggingArgs{
 		Filter:              args.Filter,
@@ -138,7 +131,6 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 	var jsonMap map[string]interface{}
 	var jsonedTags string
 	var finMergedTags string
-	// var mergedJSON string
 
 	log.Print("[INFO] Processing file ", path)
 
