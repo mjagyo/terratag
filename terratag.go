@@ -108,17 +108,21 @@ func mergeTags(map1, map2 map[string]interface{}) (string, error) {
 	mergedTags := make(map[string]interface{})
 
 	// Merge tags from the first map
-	for key, value := range map1 {
-		mergedTags[key] = value
+	for _, value := range map1 {
+		for key1, value1 := range value.(map[string]interface{}) {
+			mergedTags[key1] = value1
+		}
 	}
 
 	// Merge tags from the second map
-	for key, value := range map2 {
-		mergedTags[key] = value
+	for _, value := range map2 {
+		for key1, value1 := range value.(map[string]interface{}) {
+			mergedTags[key1] = value1
+		}
 	}
 
 	// Convert the merged map to JSON
-	result, err := json.Marshal(mergedTags["tags"])
+	result, err := json.Marshal(mergedTags)
 	if err != nil {
 		return "", err
 	}
@@ -204,16 +208,28 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 
 			if value, exists := jsonMap["resources"].(map[string]interface{}); exists {
 				label := resource.Labels()[0]
-				fmt.Printf("Found resource '%s'\n", jsonMap["defaults"])
 
 				if resourceData, exists := value[label]; exists {
-					fmt.Printf("Found resource '%s': %v\n", label, resourceData)
-
 					finMergedTags, err = mergeTags(resourceData.(map[string]interface{}), jsonMap["defaults"].(map[string]interface{}))
 
 					if err != nil {
 						return nil, err
 					}
+				} else {
+					mergedTags := make(map[string]interface{})
+
+					// Merge tags from the first map
+					for key, value := range jsonMap["defaults"].(map[string]interface{}) {
+						mergedTags[key] = value
+					}
+
+					// Convert the merged map to JSON
+					result, err := json.Marshal(mergedTags["tags"])
+					if err != nil {
+						return nil, err
+					}
+
+					finMergedTags = string(result)
 				}
 
 				if err != nil {
@@ -235,9 +251,9 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 				}
 
 				finMergedTags = string(result)
-
-				fmt.Printf("Merged tags '%s'\n", finMergedTags)
 			}
+
+			fmt.Printf("Merged tags '%s'\n", finMergedTags)
 
 			hclMap, err := toHclMap(finMergedTags)
 			if err != nil {
