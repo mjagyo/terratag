@@ -27,7 +27,7 @@ var cleanArgs = append([]string(nil), os.Args...)
 var programName = os.Args[0]
 var args = []string{
 	programName,
-	"-file=./default.terratag.yml",
+	"-file=default.terratag.yml",
 }
 var testsDir = "test/tests"
 var fixtureDir = "test/fixture"

@@ -13,20 +13,24 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func ReplaceWithTerratagFile(path string, textContent string, rename bool) error {
+func CreatingBackup(path string) error {
 	backupFilename := path + ".bak"
-
-	if rename {
-		taggedFilename := strings.TrimSuffix(path, filepath.Ext(path)) + ".terratag.tf"
-		if err := CreateFile(taggedFilename, textContent); err != nil {
-			return err
-		}
-	}
 
 	log.Print("[INFO] Backing up ", path, " to ", backupFilename)
 
 	if err := os.Rename(path, backupFilename); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func ReplaceWithTerratagFile(path string, textContent string, rename bool) error {
+	if rename {
+		taggedFilename := strings.TrimSuffix(path, filepath.Ext(path)) + ".terratag.tf"
+		if err := CreateFile(taggedFilename, textContent); err != nil {
+			return err
+		}
 	}
 
 	if !rename {

@@ -34,31 +34,15 @@ func stringifyExpression(tokens hclwrite.Tokens) string {
 	return expression
 }
 
-func AppendLocalsBlock(file *hclwrite.File, filename string, terratag common.TerratagLocal) {
-	key := tag_keys.GetTerratagAddedKey(filename)
-
-	// If there's an existings terratag locals replace it with the merged locals.
-	blocks := file.Body().Blocks()
-	for _, block := range blocks {
-		if block.Type() != "locals" {
-			continue
-		}
-
-		if block.Body().GetAttribute(key) == nil {
-			continue
-		}
-
-		block.Body().RemoveAttribute(key)
-		block.Body().SetAttributeValue(key, cty.StringVal(terratag.Added))
-
-		return
-	}
-
+func AppendLocalsBlock(file *hclwrite.File, filename string, terratag common.TerratagLocal, resourceList []string, tagValue []string) {
 	file.Body().AppendNewline()
 	locals := file.Body().AppendNewBlock("locals", nil)
-	file.Body().AppendNewline()
 
-	locals.Body().SetAttributeValue(key, cty.StringVal(terratag.Added))
+	for idx, label := range resourceList {
+		key := tag_keys.GetTerratagAddedKey(filename, label)
+
+		locals.Body().SetAttributeValue(key, cty.StringVal(tagValue[idx]))
+	}
 }
 
 func AppendTagBlocks(resource *hclwrite.Block, tags string) error {

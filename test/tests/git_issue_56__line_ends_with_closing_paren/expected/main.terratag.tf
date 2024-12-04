@@ -25,10 +25,10 @@ resource "kubernetes_deployment" "audit_server" {
 
 resource "google_pubsub_topic" "audit_topic" {
   name   = "yuvu"
-  labels = merge(local.terratag_added_main, local.terratag_added_main)
+  labels = merge(local.terratag_added_main_google_pubsub_topic, local.terratag_added_main_google_pubsub_topic)
 }
 
 locals {
-  terratag_added_main = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_google_pubsub_topic = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
 }
 

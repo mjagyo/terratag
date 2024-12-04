@@ -14,7 +14,7 @@ provider "aws" {
 resource "aws_placement_group" "test" {
   name     = "test"
   strategy = "cluster"
-  tags     = local.terratag_added_main
+  tags     = local.terratag_added_main_aws_placement_group
 }
 
 resource "aws_autoscaling_group" "bar" {
@@ -100,7 +100,7 @@ EOF
     delete = "15m"
   }
 
-  tags = flatten([local.terratag_added_main, [
+  tags = flatten([local.terratag_added_main_aws_autoscaling_group, [
     {
       key   = "a"
       value = "b"
@@ -113,6 +113,6 @@ EOF
 }
 
 locals {
-  terratag_added_main = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_aws_placement_group   = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_aws_autoscaling_group = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
 }
-

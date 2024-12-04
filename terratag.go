@@ -139,6 +139,8 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 	log.Print("[INFO] Processing file ", path)
 
 	var swappedTagsStrings []string
+	var resourceLabel []string
+	var tagsList []string
 
 	hcl, err := file.ReadHCLFile(path)
 	if err != nil {
@@ -175,6 +177,7 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 			log.Print("[INFO] Processing resource ", resource.Labels())
 
 			perFileCounters.totalResources += 1
+			resourceLabel = append(resourceLabel, resource.Labels()[0])
 
 			matched, err := regexp.MatchString(args.Filter, resource.Labels()[0])
 			if err != nil {
@@ -235,7 +238,6 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 				if err != nil {
 					return nil, err
 				}
-
 			} else {
 				mergedTags := make(map[string]interface{})
 
@@ -252,9 +254,6 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 
 				finMergedTags = string(result)
 			}
-
-			fmt.Printf("Merged tags '%s'\n", finMergedTags)
-
 			hclMap, err := toHclMap(finMergedTags)
 			if err != nil {
 				return nil, err
@@ -264,6 +263,7 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 				Found: map[string]hclwrite.Tokens{},
 				Added: hclMap,
 			}
+			tagsList = append(tagsList, terratag.Added)
 
 			if isTaggable {
 				log.Print("[INFO] Resource taggable, processing...", resource.Labels())
@@ -289,8 +289,9 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 			// Checks if terratag_added_* exists.
 			// If it exists no need to append it again to Terratag file.
 			// Instead should override it.
+			log.Print("[DEBUGGING] RUNNING ON CASE LOCAL ")
 			attributes := resource.Body().Attributes()
-			key := tag_keys.GetTerratagAddedKey(filename)
+			key := tag_keys.GetTerratagAddedKey(filename, "*")
 
 			for attributeKey, attribute := range attributes {
 				if attributeKey == key {
@@ -308,15 +309,16 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 	}
 
 	if len(swappedTagsStrings) > 0 {
-		convert.AppendLocalsBlock(hcl, filename, terratag)
+		file.CreatingBackup(path)
+		convert.AppendLocalsBlock(hcl, filename, terratag, resourceLabel, tagsList)
 
-		text := string(hcl.Bytes())
-
-		swappedTagsStrings = append(swappedTagsStrings, terratag.Added)
-		text = convert.UnquoteTagsAttribute(swappedTagsStrings, text)
-
-		if err := file.ReplaceWithTerratagFile(path, text, args.Rename); err != nil {
-			return nil, err
+		for key, _ := range resourceLabel {
+			text := string(hcl.Bytes())
+			swappedTagsStrings = append(swappedTagsStrings, tagsList[key])
+			text = convert.UnquoteTagsAttribute(swappedTagsStrings, text)
+			if err := file.ReplaceWithTerratagFile(path, text, args.Rename); err != nil {
+				return nil, err
+			}
 		}
 
 		perFileCounters.taggedFiles = 1

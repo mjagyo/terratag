@@ -6,7 +6,7 @@ provider "azurerm" {
 resource "azurerm_resource_group" "non_existing_tags_rg" {
   name     = "non_existing_tags_rg"
   location = "northeurope"
-  tags     = local.terratag_added_main
+  tags     = local.terratag_added_main_azurerm_resource_group
 }
 
 resource "azurerm_kubernetes_cluster" "non_existing_tags_cluster" {
@@ -24,7 +24,7 @@ resource "azurerm_kubernetes_cluster" "non_existing_tags_cluster" {
     name       = "pool"
     node_count = 2
     vm_size    = "Standard_D2_v2"
-    tags       = local.terratag_added_main
+    tags       = local.terratag_added_main_azurerm_kubernetes_cluster
   }
 
   network_profile {
@@ -32,13 +32,13 @@ resource "azurerm_kubernetes_cluster" "non_existing_tags_cluster" {
     network_plugin    = "kubenet"
   }
 
-  tags = local.terratag_added_main
+  tags = local.terratag_added_main_azurerm_kubernetes_cluster
 }
 
 resource "azurerm_resource_group" "existing_tags_rg" {
   name     = "existing_tags_rg"
   location = "northeurope"
-  tags     = local.terratag_added_main
+  tags     = local.terratag_added_main_azurerm_resource_group
 }
 
 resource "azurerm_kubernetes_cluster" "existing_tags_cluster" {
@@ -58,7 +58,7 @@ resource "azurerm_kubernetes_cluster" "existing_tags_cluster" {
     vm_size    = "Standard_D2_v2"
     tags = merge({
       "existing" = "tag"
-    }, local.terratag_added_main)
+    }, local.terratag_added_main_azurerm_kubernetes_cluster)
   }
 
   network_profile {
@@ -68,10 +68,10 @@ resource "azurerm_kubernetes_cluster" "existing_tags_cluster" {
 
   tags = merge({
     "existing" = "tag"
-  }, local.terratag_added_main)
+  }, local.terratag_added_main_azurerm_kubernetes_cluster)
 }
 
 locals {
-  terratag_added_main = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_azurerm_kubernetes_cluster = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_azurerm_resource_group     = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
 }
-

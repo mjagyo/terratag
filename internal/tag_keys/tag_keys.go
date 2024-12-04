@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
-func GetTerratagAddedKey(filname string) string {
-	return "terratag_added_" + filname
+func GetTerratagAddedKey(filname string, resource string) string {
+	return "terratag_added_" + filname + "_" + resource
 }
 
 func GetResourceExistingTagsKey(filename string, resource *hclwrite.Block) string {

@@ -94,7 +94,7 @@ func tagAutoscalingGroup(args TagBlockArgs) (*Result, error) {
 		expression = strings.TrimPrefix(expression, "${")
 		expression = strings.TrimSuffix(expression, "${")
 
-		key := "local." + tag_keys.GetTerratagAddedKey(args.Filename)
+		key := "local." + tag_keys.GetTerratagAddedKey(args.Filename, args.Block.Labels()[0])
 		newTagsValue := "flatten([" + key + "," + expression + "])"
 
 		newTags := ParseHclValueStringToTokens(newTagsValue)

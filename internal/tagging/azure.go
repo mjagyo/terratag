@@ -1,10 +1,14 @@
 package tagging
 
+import "log"
+
 func tagAksK8sCluster(args TagBlockArgs) (*Result, error) {
 	var swappedTagsStrings []string
 
+	log.Print("[INFO] tagAksK8sCluster ", args.Block.Labels())
 	// handle root block tags attribute
 	tagBlock, err := TagBlock(args)
+
 	if err != nil {
 		return nil, err
 	}
@@ -20,6 +24,7 @@ func tagAksK8sCluster(args TagBlockArgs) (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
+		log.Print("[INFO] NODE POOL ", args.Block.Labels(), tagBlock)
 
 		swappedTagsStrings = append(swappedTagsStrings, tagBlock)
 	}

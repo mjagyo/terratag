@@ -33,12 +33,17 @@ func ParseHclValueStringToTokens(hclValueString string) hclwrite.Tokens {
 }
 
 func TagBlock(args TagBlockArgs) (string, error) {
+	var resourceLabel = "node_pool"
+	if len(args.Block.Labels()) != 0 {
+		resourceLabel = args.Block.Labels()[0]
+	}
+
 	hasExistingTags, err := convert.MoveExistingTags(args.Filename, args.Terratag, args.Block, args.TagId)
 	if err != nil {
 		return "", err
 	}
 
-	terratagAddedKey := "local." + tag_keys.GetTerratagAddedKey(args.Filename)
+	terratagAddedKey := "local." + tag_keys.GetTerratagAddedKey(args.Filename, resourceLabel)
 	newTagsValue := terratagAddedKey
 
 	if hasExistingTags {
