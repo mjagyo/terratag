@@ -9,7 +9,6 @@ suites:
   - git_issue_17__tfschema_provider_not_from_prefix
   - git_issue_43__invalid_tf_files_in_subfolders
   - git_issue_66_aws_aliased_provider
-  - git_issue_88__corrupt_hcl_file
   - google_beta_resource_skip
   - google_labels_map
   - google_vs_google_beta
