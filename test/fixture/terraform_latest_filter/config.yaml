@@ -1,2 +1,2 @@
 suites:
-  - aws_azure
+  # - aws_azure

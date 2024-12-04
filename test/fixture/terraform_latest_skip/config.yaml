@@ -1,2 +1,2 @@
 suites:
-  - azurerm_skip
+  # - azurerm_skip

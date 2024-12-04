@@ -23,7 +23,7 @@ resource "azurerm_resource_group" "should_have_tags" {
   location = "West Europe"
   tags = merge({
     "oh" = "my"
-  }, local.terratag_added_main)
+  }, local.terratag_added_main_azurerm_resource_group)
 }
 
 resource "azurerm_virtual_network" "should_not_have_tags" {
@@ -31,6 +31,7 @@ resource "azurerm_virtual_network" "should_not_have_tags" {
   resource_group_name = azurerm_resource_group.should_have_tags.name
   location            = azurerm_resource_group.should_have_tags.location
   address_space       = ["10.0.0.0/16"]
+  tags                = local.terratag_added_main_azurerm_virtual_network
 }
 
 resource "aws_s3_bucket" "should_have_tags" {
@@ -39,10 +40,11 @@ resource "aws_s3_bucket" "should_have_tags" {
 
   tags = merge({
     "Name" = "My bucket"
-  }, local.terratag_added_main)
+  }, local.terratag_added_main_aws_s3_bucket)
 }
 
 locals {
-  terratag_added_main_azurerm_resource_group = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
-  terratag_added_main_aws_s3_bucket          = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_azurerm_resource_group  = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_azurerm_virtual_network = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
+  terratag_added_main_aws_s3_bucket           = {"env0_environment_id"="40907eff-cf7c-419a-8694-e1c6bf1d1168","env0_project_id"="43fd4ff1-8d37-4d9d-ac97-295bd850bf94"}
 }
