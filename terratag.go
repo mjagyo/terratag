@@ -177,7 +177,6 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 			log.Print("[INFO] Processing resource ", resource.Labels())
 
 			perFileCounters.totalResources += 1
-			resourceLabel = append(resourceLabel, resource.Labels()[0])
 
 			matched, err := regexp.MatchString(args.Filter, resource.Labels()[0])
 			if err != nil {
@@ -263,9 +262,10 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 				Found: map[string]hclwrite.Tokens{},
 				Added: hclMap,
 			}
-			tagsList = append(tagsList, terratag.Added)
 
 			if isTaggable {
+				resourceLabel = append(resourceLabel, resource.Labels()[0])
+				tagsList = append(tagsList, terratag.Added)
 				log.Print("[INFO] Resource taggable, processing...", resource.Labels())
 
 				perFileCounters.taggedResources += 1
