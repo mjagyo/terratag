@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"log"
+	"sync"
 
 	"github.com/env0/terratag/internal/common"
 	"github.com/env0/terratag/internal/convert"
@@ -10,6 +11,8 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 )
+
+var resourceType string
 
 func defaultTaggingFn(args TagBlockArgs) (*Result, error) {
 	tagBlock, err := TagBlock(args)
@@ -33,9 +36,15 @@ func ParseHclValueStringToTokens(hclValueString string) hclwrite.Tokens {
 }
 
 func TagBlock(args TagBlockArgs) (string, error) {
-	var resourceLabel = "node_pool"
-	if len(args.Block.Labels()) != 0 {
-		resourceLabel = args.Block.Labels()[0]
+	resourceLabels := args.Block.Labels()
+	var resourceLabel string
+
+	if len(resourceLabels) > 0 {
+		resourceLabel = resourceLabels[0]
+		resourceType = resourceLabels[0]
+	} else {
+		getResourceType := GetResourceTypeForBlock()
+		resourceLabel = getResourceType(args.Block.Labels())
 	}
 
 	hasExistingTags, err := convert.MoveExistingTags(args.Filename, args.Terratag, args.Block, args.TagId)
@@ -71,6 +80,17 @@ func TagResource(args TagBlockArgs) (*Result, error) {
 		return customTaggingFn(args)
 	} else {
 		return defaultTaggingFn(args)
+	}
+}
+
+func GetResourceTypeForBlock() func([]string) string {
+	var mu sync.Mutex // Mutex to protect access to storedValue
+
+	return func(arg []string) string {
+		mu.Lock()         // Lock before modifying or accessing shared state
+		defer mu.Unlock() // Unlock after the operation is complete
+
+		return resourceType
 	}
 }
 

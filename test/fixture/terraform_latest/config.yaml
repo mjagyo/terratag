@@ -13,3 +13,4 @@ suites:
   - google_labels_map
   - google_vs_google_beta
   - provider_function
+  - aws_instance_volume_tags

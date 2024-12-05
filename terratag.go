@@ -289,7 +289,6 @@ func tagFileResources(path string, args *common.TaggingArgs) (*counters, error) 
 			// Checks if terratag_added_* exists.
 			// If it exists no need to append it again to Terratag file.
 			// Instead should override it.
-			log.Print("[DEBUGGING] RUNNING ON CASE LOCAL ")
 			attributes := resource.Body().Attributes()
 			key := tag_keys.GetTerratagAddedKey(filename, "*")
 
