@@ -31,3 +31,4 @@ linters-settings:
       - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
   goconst:
     ignore-tests: true
+
